@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "watch": "tsc -w",
-    "start": "nodemon dist/index.js"
+    "start": "nodemon dist/index.js",
+    "seed": "ts-node prisma/seed.ts"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,11 @@
   "devDependencies": {
     "@types/node": "^16.11.9",
     "nodemon": "^2.0.15",
+    "prisma": "3.5.0",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "@prisma/client": "3.5.0"
   }
 }

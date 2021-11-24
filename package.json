@@ -1,0 +1,27 @@
+{
+  "name": "noteIt-backend",
+  "version": "1.0.0",
+  "description": "Project for Noteit app",
+  "main": "index.js",
+  "scripts": {
+    "watch": "tsc -w",
+    "start": "nodemon dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bnj997/noteIt-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bnj997/noteIt-backend/issues"
+  },
+  "homepage": "https://github.com/bnj997/noteIt-backend#readme",
+  "devDependencies": {
+    "@types/node": "^16.11.9",
+    "nodemon": "^2.0.15",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.2"
+  }
+}

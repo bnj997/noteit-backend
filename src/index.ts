@@ -2,6 +2,8 @@ import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { typeDefs } from "../graphql/schema";
 import { resolvers } from "../graphql/resolvers";
+import { createContext } from "../graphql/context";
+
 import cors from "cors";
 
 const main = async () => {
@@ -11,6 +13,7 @@ const main = async () => {
   const apolloServer = new ApolloServer({
     resolvers,
     typeDefs,
+    context: createContext,
   });
 
   await apolloServer.start();

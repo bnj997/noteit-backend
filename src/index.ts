@@ -6,7 +6,7 @@ import cors from "cors";
 
 const main = async () => {
   const app = express();
-  app.use(cors);
+  app.use(cors());
 
   const apolloServer = new ApolloServer({
     resolvers,

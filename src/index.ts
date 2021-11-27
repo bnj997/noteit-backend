@@ -1,6 +1,6 @@
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
-import { typeDefs } from "../graphql/schema";
+import { schema } from "../graphql/schema";
 import { resolvers } from "../graphql/resolvers";
 import { createContext } from "../graphql/context";
 
@@ -11,8 +11,8 @@ const main = async () => {
   app.use(cors());
 
   const apolloServer = new ApolloServer({
+    schema,
     resolvers,
-    typeDefs,
     context: createContext,
   });
 

@@ -1,7 +1,8 @@
-import prisma from "../lib/prisma";
+import { Context } from "./context";
 
 export const resolvers = {
   Query: {
-    notes: async (_parent, _args, _ctx) => await prisma.note.findMany(),
+    notes: async (_parent, _args, ctx: Context) =>
+      await ctx.prisma.note.findMany(),
   },
 };

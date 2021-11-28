@@ -11,7 +11,7 @@ type Note {
 }
 
 type Query {
-  ok: Boolean!
+  notes: [Note]!
 }
 
 enum Role {

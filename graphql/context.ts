@@ -6,8 +6,8 @@ export type Context = {
 };
 
 export async function createContext(
-  req: Request,
-  res: Response
+  _req: Request,
+  _res: Response
 ): Promise<Context> {
   return {
     prisma,

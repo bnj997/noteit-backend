@@ -1,0 +1,18 @@
+import { objectType } from "nexus";
+import { User } from "./User";
+
+export const FieldError = objectType({
+  name: "FieldError",
+  definition(t) {
+    t.string("field");
+    t.string("message");
+  },
+});
+
+export const UserResponse = objectType({
+  name: "UserResponse",
+  definition(t) {
+    t.list.field("errors", { type: FieldError });
+    t.field("user", { type: User });
+  },
+});

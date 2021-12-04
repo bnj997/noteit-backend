@@ -1,15 +1,12 @@
 import { PrismaClient } from ".prisma/client";
-import prisma from "../lib/prisma";
+import { Request, Response } from "express";
+import { SessionData } from "express-session";
+import { Session } from "inspector";
 
 export type Context = {
   prisma: PrismaClient;
-};
-
-export async function createContext(
-  _req: Request,
-  _res: Response
-): Promise<Context> {
-  return {
-    prisma,
+  req: Request & {
+    session: Session & Partial<SessionData> & { userId?: string };
   };
-}
+  res: Response;
+};

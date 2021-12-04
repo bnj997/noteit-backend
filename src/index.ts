@@ -1,17 +1,50 @@
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { schema } from "../graphql/schema";
-import { createContext } from "../graphql/context";
-
+import Redis from "ioredis";
+import session from "express-session";
+import connectRedis from "connect-redis";
 import cors from "cors";
+import prisma from "../lib/prisma";
+import { COOKIE_NAME } from "./constants";
 
 const main = async () => {
   const app = express();
-  app.use(cors());
+  const RedisStore = connectRedis(session);
+  const redis = new Redis();
+
+  app.use(
+    cors({
+      origin: "https://studio.apollographql.com",
+      credentials: true,
+    })
+  );
+
+  app.set("trust proxy", 1);
+
+  app.use(
+    session({
+      name: COOKIE_NAME,
+      store: new RedisStore({
+        client: redis,
+        disableTouch: true,
+      }),
+      cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 365, //1 year
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+      },
+      proxy: true,
+      saveUninitialized: false,
+      secret: "dfgsdfgsfdgdfsg",
+      resave: false,
+    })
+  );
 
   const apolloServer = new ApolloServer({
     schema,
-    context: createContext,
+    context: ({ req, res }) => ({ req, res, prisma }),
   });
 
   await apolloServer.start();

@@ -29,6 +29,28 @@ export const User = objectType({
 //   members: ["USER", "ADMIN"],
 // });
 
+export const MeQuery = extendType({
+  type: "Query",
+  definition(t) {
+    t.field("me", {
+      type: User,
+      async resolve(_parent, _args, { req, prisma }) {
+        if (!req.session.userId) {
+          return null;
+        }
+
+        const user = await prisma.user.findFirst({
+          where: {
+            id: req.session.userId,
+          },
+        });
+
+        return user;
+      },
+    });
+  },
+});
+
 export const RegisterMutation = extendType({
   type: "Mutation",
   definition(t) {
@@ -38,7 +60,7 @@ export const RegisterMutation = extendType({
         email: nonNull(stringArg()),
         password: nonNull(stringArg()),
       },
-      async resolve(_parent, args, ctx: Context) {
+      async resolve(_parent, args, { prisma, req }) {
         if (args.password.length < 5) {
           return {
             errors: [
@@ -61,7 +83,7 @@ export const RegisterMutation = extendType({
           };
         }
 
-        const duplicateEmail = await ctx.prisma.user.findFirst({
+        const duplicateEmail = await prisma.user.findFirst({
           where: {
             email: args.email,
           },
@@ -84,11 +106,14 @@ export const RegisterMutation = extendType({
           email: args.email,
           password: hashedPassword,
         };
-        const newUser = await ctx.prisma.user.create({
+        const newUser = await prisma.user.create({
           data: userInfo,
         });
+
+        req.session.userId = newUser.id;
+
         return {
-          user: newUser,
+          newUser,
         };
       },
     });
@@ -104,8 +129,8 @@ export const LoginMutation = extendType({
         email: nonNull(stringArg()),
         password: nonNull(stringArg()),
       },
-      async resolve(_parent, args, ctx: Context) {
-        const user = await ctx.prisma.user.findFirst({
+      async resolve(_parent, args, { prisma, req }) {
+        const user = await prisma.user.findFirst({
           where: { email: args.email },
         });
 
@@ -121,6 +146,7 @@ export const LoginMutation = extendType({
         }
 
         const valid = await argon2.verify(user.password, args.password);
+
         if (!valid) {
           return {
             errors: [
@@ -131,8 +157,11 @@ export const LoginMutation = extendType({
             ],
           };
         }
+
+        req.session.userId = user.id;
+
         return {
-          user: user,
+          user,
         };
       },
     });

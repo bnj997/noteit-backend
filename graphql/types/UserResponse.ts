@@ -4,8 +4,8 @@ import { User } from "./User";
 export const FieldError = objectType({
   name: "FieldError",
   definition(t) {
-    t.string("field");
-    t.string("message");
+    t.nonNull.string("field");
+    t.nonNull.string("message");
   },
 });
 

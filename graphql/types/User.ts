@@ -7,9 +7,9 @@ import * as argon2 from "argon2";
 export const User = objectType({
   name: "User",
   definition(t) {
-    t.string("id");
-    t.string("email");
-    t.list.field("notes", {
+    t.nonNull.string("id");
+    t.nonNull.string("email");
+    t.nonNull.list.field("notes", {
       type: Note,
       async resolve(parent, _args, ctx: Context) {
         return await ctx.prisma.user
@@ -54,7 +54,7 @@ export const MeQuery = extendType({
 export const RegisterMutation = extendType({
   type: "Mutation",
   definition(t) {
-    t.field("register", {
+    t.nonNull.field("register", {
       type: UserResponse,
       args: {
         email: nonNull(stringArg()),
@@ -123,7 +123,7 @@ export const RegisterMutation = extendType({
 export const LoginMutation = extendType({
   type: "Mutation",
   definition(t) {
-    t.field("login", {
+    t.nonNull.field("login", {
       type: UserResponse,
       args: {
         email: nonNull(stringArg()),

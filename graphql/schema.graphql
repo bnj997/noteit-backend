@@ -3,16 +3,16 @@
 
 
 type FieldError {
-  field: String
-  message: String
+  field: String!
+  message: String!
 }
 
 type Mutation {
   createNote(category: String!, creatorId: String!, description: String!, title: String!): Note!
   deleteNote(id: String!): Note!
-  login(email: String!, password: String!): UserResponse
-  register(email: String!, password: String!): UserResponse
-  updateNote(category: String!, description: String!, id: String!, title: String!): Note
+  login(email: String!, password: String!): UserResponse!
+  register(email: String!, password: String!): UserResponse!
+  updateNote(category: String!, description: String!, id: String!, title: String!): Note!
 }
 
 type Note {
@@ -29,9 +29,9 @@ type Query {
 }
 
 type User {
-  email: String
-  id: String
-  notes: [Note]
+  email: String!
+  id: String!
+  notes: [Note]!
 }
 
 type UserResponse {

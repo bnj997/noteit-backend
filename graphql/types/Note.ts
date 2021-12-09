@@ -53,7 +53,7 @@ export const CreateNoteMutation = extendType({
 export const UpdateNoteMutation = extendType({
   type: "Mutation",
   definition(t) {
-    t.field("updateNote", {
+    t.nonNull.field("updateNote", {
       type: Note,
       args: {
         id: nonNull(stringArg()),

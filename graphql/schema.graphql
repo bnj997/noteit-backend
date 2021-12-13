@@ -8,8 +8,10 @@ type FieldError {
 }
 
 type Mutation {
+  changePassword(newPassword: String!, token: String!): UserResponse!
   createNote(category: String!, creatorId: String!, description: String!, title: String!): Note!
   deleteNote(id: String!): Note!
+  forgotPassword(email: String!): Boolean!
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
   register(email: String!, password: String!): UserResponse!
@@ -17,11 +19,11 @@ type Mutation {
 }
 
 type Note {
-  category: String
-  creatorId: String
-  description: String
-  id: String
-  title: String
+  category: String!
+  creatorId: String!
+  description: String!
+  id: String!
+  title: String!
 }
 
 type Query {

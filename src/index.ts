@@ -7,8 +7,10 @@ import connectRedis from "connect-redis";
 import cors from "cors";
 import prisma from "../lib/prisma";
 import { COOKIE_NAME } from "./constants";
+import { sendEmail } from "../utils/sendEmail";
 
 const main = async () => {
+  sendEmail("hello@hello.com", "hello there");
   const app = express();
   const RedisStore = connectRedis(session);
   const redis = new Redis();
@@ -44,7 +46,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema,
-    context: ({ req, res }) => ({ req, res, prisma }),
+    context: ({ req, res }) => ({ req, res, prisma, redis }),
   });
 
   await apolloServer.start();

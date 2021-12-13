@@ -3,11 +3,11 @@ import { extendType, nonNull, objectType, stringArg } from "nexus";
 export const Note = objectType({
   name: "Note",
   definition(t) {
-    t.string("id");
-    t.string("title");
-    t.string("description");
-    t.string("category");
-    t.string("creatorId");
+    t.nonNull.string("id");
+    t.nonNull.string("title");
+    t.nonNull.string("description");
+    t.nonNull.string("category");
+    t.nonNull.string("creatorId");
   },
 });
 

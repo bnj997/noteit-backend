@@ -11,6 +11,7 @@ type Mutation {
   createNote(category: String!, creatorId: String!, description: String!, title: String!): Note!
   deleteNote(id: String!): Note!
   login(email: String!, password: String!): UserResponse!
+  logout: Boolean!
   register(email: String!, password: String!): UserResponse!
   updateNote(category: String!, description: String!, id: String!, title: String!): Note!
 }

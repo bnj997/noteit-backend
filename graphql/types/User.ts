@@ -3,6 +3,7 @@ import { Context } from "graphql/context";
 import { extendType, nonNull, objectType, stringArg } from "nexus";
 import { Note } from "./Note";
 import * as argon2 from "argon2";
+import { COOKIE_NAME } from "../../src/constants";
 
 export const User = objectType({
   name: "User",
@@ -72,12 +73,23 @@ export const RegisterMutation = extendType({
           };
         }
 
+        if (args.password.length === 0) {
+          return {
+            errors: [
+              {
+                field: "password",
+                message: "Please enter a password",
+              },
+            ],
+          };
+        }
+
         if (!args.email.includes("@")) {
           return {
             errors: [
               {
                 field: "email",
-                message: "Invalid email",
+                message: "Invalid email address",
               },
             ],
           };
@@ -113,7 +125,7 @@ export const RegisterMutation = extendType({
         req.session.userId = newUser.id;
 
         return {
-          newUser,
+          user: newUser,
         };
       },
     });
@@ -161,8 +173,31 @@ export const LoginMutation = extendType({
         req.session.userId = user.id;
 
         return {
-          user,
+          user: user,
         };
+      },
+    });
+  },
+});
+
+export const LogoutMutation = extendType({
+  type: "Mutation",
+  definition(t) {
+    t.nonNull.field("logout", {
+      type: "Boolean",
+      async resolve(_parent, _, { req, res }) {
+        return new Promise((resolveSess) => {
+          req.session.destroy((err) => {
+            res.clearCookie(COOKIE_NAME);
+            if (err) {
+              console.log(err);
+              resolveSess(false);
+              return;
+            }
+
+            resolveSess(true);
+          });
+        });
       },
     });
   },

@@ -12,9 +12,9 @@ type Mutation {
   createNote(category: String!, creatorId: String!, description: String!, title: String!): Note!
   deleteNote(id: String!): Note!
   forgotPassword(email: String!): Boolean!
-  login(email: String!, password: String!): UserResponse!
+  login(password: String!, username: String!): UserResponse!
   logout: Boolean!
-  register(email: String!, password: String!): UserResponse!
+  register(email: String!, password: String!, username: String!): UserResponse!
   updateNote(category: String!, description: String!, id: String!, title: String!): Note!
 }
 
@@ -35,6 +35,7 @@ type User {
   email: String!
   id: String!
   notes: [Note]!
+  username: String!
 }
 
 type UserResponse {

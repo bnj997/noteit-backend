@@ -10,6 +10,7 @@ export const User = objectType({
   name: "User",
   definition(t) {
     t.nonNull.string("id");
+    t.nonNull.string("username");
     t.nonNull.string("email");
     t.nonNull.list.field("notes", {
       type: Note,
@@ -59,11 +60,12 @@ export const RegisterMutation = extendType({
     t.nonNull.field("register", {
       type: UserResponse,
       args: {
+        username: nonNull(stringArg()),
         email: nonNull(stringArg()),
         password: nonNull(stringArg()),
       },
       async resolve(_parent, args, { prisma, req }) {
-        if (args.password.length < 5) {
+        if (args.password.length < 6) {
           return {
             errors: [
               {
@@ -114,8 +116,38 @@ export const RegisterMutation = extendType({
           };
         }
 
+        if (args.username.length < 5) {
+          return {
+            errors: [
+              {
+                field: "username",
+                message: "Username must be at least 5 characters in length",
+              },
+            ],
+          };
+        }
+
+        const duplicateUsername = await prisma.user.findFirst({
+          where: {
+            username: args.username,
+          },
+        });
+
+        if (duplicateUsername) {
+          return {
+            errors: [
+              {
+                field: "username",
+                message:
+                  "Username already found in records, maybe try login instead?",
+              },
+            ],
+          };
+        }
+
         const hashedPassword = await argon2.hash(args.password);
         const userInfo = {
+          username: args.username,
           email: args.email,
           password: hashedPassword,
         };
@@ -139,20 +171,22 @@ export const LoginMutation = extendType({
     t.nonNull.field("login", {
       type: UserResponse,
       args: {
-        email: nonNull(stringArg()),
+        username: nonNull(stringArg()),
         password: nonNull(stringArg()),
       },
       async resolve(_parent, args, { prisma, req }) {
         const user = await prisma.user.findFirst({
-          where: { email: args.email },
+          where: {
+            username: args.username,
+          },
         });
 
         if (!user) {
           return {
             errors: [
               {
-                field: "email",
-                message: "That email does not exist",
+                field: "username",
+                message: "That username does not exist",
               },
             ],
           };

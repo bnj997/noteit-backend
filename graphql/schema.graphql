@@ -10,12 +10,12 @@ type FieldError {
 type Mutation {
   changePassword(newPassword: String!, token: String!): UserResponse!
   createNote(category: String!, creatorId: String!, description: String!, title: String!): Note!
-  deleteNote(id: String!): Note!
+  deleteNote(id: String!): Boolean!
   forgotPassword(email: String!): Boolean!
   login(password: String!, username: String!): UserResponse!
   logout: Boolean!
   register(email: String!, password: String!, username: String!): UserResponse!
-  updateNote(category: String!, description: String!, id: String!, title: String!): Note!
+  updateNote(category: String!, description: String!, id: String!, title: String!): NoteResponse!
 }
 
 type Note {
@@ -24,6 +24,11 @@ type Note {
   description: String!
   id: String!
   title: String!
+}
+
+type NoteResponse {
+  errors: [FieldError]
+  note: Note
 }
 
 type Query {

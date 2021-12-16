@@ -1,13 +1,14 @@
 import { extendType, nonNull, objectType, stringArg } from "nexus";
+import { NoteResponse } from "./NoteResponse";
 
 export const Note = objectType({
   name: "Note",
   definition(t) {
-    t.string("id");
-    t.string("title");
-    t.string("description");
-    t.string("category");
-    t.string("creatorId");
+    t.nonNull.string("id");
+    t.nonNull.string("title");
+    t.nonNull.string("description");
+    t.nonNull.string("category");
+    t.nonNull.string("creatorId");
   },
 });
 
@@ -54,7 +55,7 @@ export const UpdateNoteMutation = extendType({
   type: "Mutation",
   definition(t) {
     t.nonNull.field("updateNote", {
-      type: Note,
+      type: NoteResponse,
       args: {
         id: nonNull(stringArg()),
         title: nonNull(stringArg()),
@@ -62,7 +63,40 @@ export const UpdateNoteMutation = extendType({
         category: nonNull(stringArg()),
       },
       async resolve(_parent, args, { prisma }) {
-        return await prisma.note.update({
+        if (!args.title) {
+          return {
+            errors: [
+              {
+                field: "title",
+                message: "Title is required",
+              },
+            ],
+          };
+        }
+
+        if (!args.description) {
+          return {
+            errors: [
+              {
+                field: "description",
+                message: "Description is required",
+              },
+            ],
+          };
+        }
+
+        if (!args.category) {
+          return {
+            errors: [
+              {
+                field: "category",
+                message: "Category",
+              },
+            ],
+          };
+        }
+
+        const updatedNote = await prisma.note.update({
           where: { id: args.id },
           data: {
             title: args.title,
@@ -70,6 +104,10 @@ export const UpdateNoteMutation = extendType({
             category: args.category,
           },
         });
+
+        return {
+          note: updatedNote,
+        };
       },
     });
   },
@@ -79,14 +117,16 @@ export const DeleteNoteMutation = extendType({
   type: "Mutation",
   definition(t) {
     t.nonNull.field("deleteNote", {
-      type: Note,
+      type: "Boolean",
       args: {
         id: nonNull(stringArg()),
       },
       async resolve(_parent, args, { prisma }) {
-        return await prisma.note.delete({
+        await prisma.note.delete({
           where: { id: args.id },
         });
+
+        return true;
       },
     });
   },

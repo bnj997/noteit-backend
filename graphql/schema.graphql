@@ -9,7 +9,7 @@ type FieldError {
 
 type Mutation {
   changePassword(newPassword: String!, token: String!): UserResponse!
-  createNote(category: String!, creatorId: String!, description: String!, title: String!): Note!
+  createNote(category: String!, description: String!, title: String!): NoteResponse!
   deleteNote(id: String!): Boolean!
   forgotPassword(email: String!): Boolean!
   login(password: String!, username: String!): UserResponse!
@@ -33,7 +33,7 @@ type NoteResponse {
 
 type Query {
   me: User
-  notes: [Note]!
+  note(id: String!): NoteResponse!
 }
 
 type User {

@@ -12,14 +12,35 @@ export const Note = objectType({
   },
 });
 
-export const NotesQuery = extendType({
+export const NoteQuery = extendType({
   type: "Query",
   definition(t) {
-    t.nonNull.list.field("notes", {
-      type: Note,
-      async resolve(_parent, _args, { prisma }) {
-        const result = await prisma.note.findMany();
-        return result;
+    t.nonNull.field("note", {
+      type: NoteResponse,
+      args: {
+        id: nonNull(stringArg()),
+      },
+      async resolve(_parent, args, { prisma }) {
+        const note = await prisma.note.findUnique({
+          where: {
+            id: args.id,
+          },
+        });
+
+        if (!note) {
+          return {
+            errors: [
+              {
+                field: "title",
+                message: "Title is required",
+              },
+            ],
+          };
+        }
+
+        return {
+          note: note,
+        };
       },
     });
   },
@@ -29,23 +50,58 @@ export const CreateNoteMutation = extendType({
   type: "Mutation",
   definition(t) {
     t.nonNull.field("createNote", {
-      type: Note,
+      type: NoteResponse,
       args: {
         title: nonNull(stringArg()),
         description: nonNull(stringArg()),
         category: nonNull(stringArg()),
-        creatorId: nonNull(stringArg()),
       },
-      async resolve(_parent, args, { prisma }) {
-        const newNote = {
-          title: args.title,
-          description: args.description,
-          category: args.category,
-          creatorId: args.creatorId,
-        };
-        return await prisma.note.create({
-          data: newNote,
+      async resolve(_parent, args, { prisma, req }) {
+        if (!args.title) {
+          return {
+            errors: [
+              {
+                field: "title",
+                message: "Title is required",
+              },
+            ],
+          };
+        }
+
+        if (!args.description) {
+          return {
+            errors: [
+              {
+                field: "description",
+                message: "Description is required",
+              },
+            ],
+          };
+        }
+
+        if (!args.category) {
+          return {
+            errors: [
+              {
+                field: "category",
+                message: "Category",
+              },
+            ],
+          };
+        }
+
+        const newNote = prisma.note.create({
+          data: {
+            title: args.title,
+            description: args.description,
+            category: args.category,
+            creatorId: req.session.userId!,
+          },
         });
+
+        return {
+          note: newNote,
+        };
       },
     });
   },

@@ -1,4 +1,4 @@
-import { extendType, nonNull, objectType, stringArg } from "nexus";
+import { extendType, intArg, nonNull, objectType, stringArg } from "nexus";
 import { NoteResponse } from "./NoteResponse";
 
 export const Note = objectType({
@@ -40,6 +40,119 @@ export const NoteQuery = extendType({
 
         return {
           note: note,
+        };
+      },
+    });
+  },
+});
+
+export const Edge = objectType({
+  name: "Edges",
+  definition(t) {
+    t.nonNull.string("cursor");
+    t.nonNull.field("node", {
+      type: Note,
+    });
+  },
+});
+
+export const PageInfo = objectType({
+  name: "PageInfo",
+  definition(t) {
+    t.nonNull.string("endCursor");
+    t.nonNull.boolean("hasNextPage");
+  },
+});
+
+export const Response = objectType({
+  name: "Response",
+  definition(t) {
+    t.nonNull.field("pageInfo", { type: PageInfo });
+    t.nonNull.list.field("edges", {
+      type: Edge,
+    });
+  },
+});
+
+export const MyNotesQuery = extendType({
+  type: "Query",
+  definition(t) {
+    t.field("notes", {
+      type: Response,
+      args: {
+        first: nonNull(intArg()),
+        after: stringArg(),
+      },
+      async resolve(_, args, { prisma, req }) {
+        let queryResults = null;
+
+        if (args.after) {
+          queryResults = await prisma.note.findMany({
+            orderBy: {
+              updatedAt: "desc",
+            },
+            where: {
+              creatorId: req.session.userId,
+            },
+            take: args.first,
+            skip: 1,
+            cursor: {
+              id: args.after,
+            },
+          });
+        } else {
+          queryResults = await prisma.note.findMany({
+            orderBy: {
+              updatedAt: "desc",
+            },
+            where: {
+              creatorId: req.session.userId,
+            },
+            take: args.first,
+          });
+        }
+
+        if (queryResults.length > 0) {
+          // last element
+          const lastNoteInResults = queryResults[queryResults.length - 1];
+          // cursor we'll return
+          const myCursor = lastNoteInResults.id;
+
+          // queries after the cursor to check if we have nextPage
+          const secondQueryResults = await prisma.note.findMany({
+            orderBy: {
+              updatedAt: "desc",
+            },
+            where: {
+              creatorId: req.session.userId,
+            },
+            take: args.first,
+            skip: 1,
+            cursor: {
+              id: myCursor,
+            },
+          });
+
+          const result = {
+            pageInfo: {
+              endCursor: myCursor,
+              hasNextPage: secondQueryResults.length > 0,
+            },
+            edges: queryResults.map((note) => ({
+              cursor: note.id,
+              node: note,
+            })),
+          };
+
+          return result;
+        }
+
+        return {
+          pageInfo: {
+            endCursor: "",
+            hasNextPage: false,
+          },
+          edges: [],
         };
       },
     });

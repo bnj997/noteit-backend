@@ -12,7 +12,7 @@ export const FieldError = objectType({
 export const UserResponse = objectType({
   name: "UserResponse",
   definition(t) {
-    t.list.field("errors", { type: FieldError });
+    t.list.nonNull.field("errors", { type: FieldError });
     t.field("user", { type: User });
   },
 });

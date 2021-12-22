@@ -26,7 +26,7 @@ model Note {
   updatedAt   DateTime @updatedAt
   title       String
   description String
-  category    String
+  category    String   @default("hello")
   creator     User @relation(fields: [creatorId], references: [id])
   creatorId   String
 }

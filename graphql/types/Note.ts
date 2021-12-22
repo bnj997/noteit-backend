@@ -169,6 +169,7 @@ export const CreateNoteMutation = extendType({
         description: nonNull(stringArg()),
         category: nonNull(stringArg()),
       },
+      authorize: (_, _args, { req }) => !!req.session.userId,
       async resolve(_parent, args, { prisma, req }) {
         if (!args.title) {
           return {
@@ -231,6 +232,7 @@ export const UpdateNoteMutation = extendType({
         description: nonNull(stringArg()),
         category: nonNull(stringArg()),
       },
+      authorize: (_, _args, { req }) => !!req.session.userId,
       async resolve(_parent, args, { prisma }) {
         if (!args.title) {
           return {
@@ -290,6 +292,7 @@ export const DeleteNoteMutation = extendType({
       args: {
         id: nonNull(stringArg()),
       },
+      authorize: (_, _args, { req }) => !!req.session.userId,
       async resolve(_parent, args, { prisma }) {
         await prisma.note.delete({
           where: { id: args.id },

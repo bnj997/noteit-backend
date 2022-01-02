@@ -1,4 +1,12 @@
-import { extendType, intArg, nonNull, objectType, stringArg } from "nexus";
+import {
+  extendType,
+  intArg,
+  list,
+  nonNull,
+  objectType,
+  stringArg,
+} from "nexus";
+import { CategoriesOnNotes } from "./CategoriesOnNotes";
 import { NoteResponse } from "./NoteResponse";
 
 export const Note = objectType({
@@ -7,8 +15,19 @@ export const Note = objectType({
     t.nonNull.string("id");
     t.nonNull.string("title");
     t.nonNull.string("description");
-    t.nonNull.string("category");
     t.nonNull.string("creatorId");
+    t.nonNull.list.nonNull.field("categories", {
+      type: CategoriesOnNotes,
+      async resolve(parent, _args, ctx) {
+        return await ctx.prisma.note
+          .findUnique({
+            where: {
+              id: parent.id!,
+            },
+          })
+          .categories();
+      },
+    });
   },
 });
 
@@ -77,7 +96,7 @@ export const Response = objectType({
 export const MyNotesQuery = extendType({
   type: "Query",
   definition(t) {
-    t.field("notes", {
+    t.nonNull.field("notes", {
       type: Response,
       args: {
         first: nonNull(intArg()),
@@ -89,7 +108,7 @@ export const MyNotesQuery = extendType({
         if (args.after) {
           queryResults = await prisma.note.findMany({
             orderBy: {
-              updatedAt: "desc",
+              createdAt: "desc",
             },
             where: {
               creatorId: req.session.userId,
@@ -103,7 +122,7 @@ export const MyNotesQuery = extendType({
         } else {
           queryResults = await prisma.note.findMany({
             orderBy: {
-              updatedAt: "desc",
+              createdAt: "desc",
             },
             where: {
               creatorId: req.session.userId,
@@ -121,7 +140,7 @@ export const MyNotesQuery = extendType({
           // queries after the cursor to check if we have nextPage
           const secondQueryResults = await prisma.note.findMany({
             orderBy: {
-              updatedAt: "desc",
+              createdAt: "desc",
             },
             where: {
               creatorId: req.session.userId,
@@ -167,7 +186,7 @@ export const CreateNoteMutation = extendType({
       args: {
         title: nonNull(stringArg()),
         description: nonNull(stringArg()),
-        category: nonNull(stringArg()),
+        categories: nonNull(list(nonNull(stringArg()))),
       },
       authorize: (_, _args, { req }) => !!req.session.userId,
       async resolve(_parent, args, { prisma, req }) {
@@ -193,22 +212,24 @@ export const CreateNoteMutation = extendType({
           };
         }
 
-        if (!args.category) {
-          return {
-            errors: [
-              {
-                field: "category",
-                message: "Category",
+        const categoriesOnNote = [];
+        for (var i = 0; i < args.categories.length; i++) {
+          categoriesOnNote.push({
+            category: {
+              connect: {
+                id: args.categories[i],
               },
-            ],
-          };
+            },
+          });
         }
 
         const newNote = prisma.note.create({
           data: {
             title: args.title,
             description: args.description,
-            category: args.category,
+            categories: {
+              create: categoriesOnNote,
+            },
             creatorId: req.session.userId!,
           },
         });
@@ -230,7 +251,7 @@ export const UpdateNoteMutation = extendType({
         id: nonNull(stringArg()),
         title: nonNull(stringArg()),
         description: nonNull(stringArg()),
-        category: nonNull(stringArg()),
+        categories: nonNull(list(nonNull(stringArg()))),
       },
       authorize: (_, _args, { req }) => !!req.session.userId,
       async resolve(_parent, args, { prisma }) {
@@ -256,23 +277,31 @@ export const UpdateNoteMutation = extendType({
           };
         }
 
-        if (!args.category) {
-          return {
-            errors: [
-              {
-                field: "category",
-                message: "Category",
+        const categoriesOnNote = [];
+        for (var i = 0; i < args.categories.length; i++) {
+          categoriesOnNote.push({
+            category: {
+              connect: {
+                id: args.categories[i],
               },
-            ],
-          };
+            },
+          });
         }
+
+        await prisma.categoriesOnNotes.deleteMany({
+          where: {
+            noteId: args.id,
+          },
+        });
 
         const updatedNote = await prisma.note.update({
           where: { id: args.id },
           data: {
             title: args.title,
             description: args.description,
-            category: args.category,
+            categories: {
+              create: categoriesOnNote,
+            },
           },
         });
 

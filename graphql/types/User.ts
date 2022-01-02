@@ -5,6 +5,7 @@ import * as argon2 from "argon2";
 import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from "../../src/constants";
 import { sendEmail } from "../../utils/sendEmail";
 import { v4 as uuidv4 } from "uuid";
+import { Category } from ".";
 
 export const User = objectType({
   name: "User",
@@ -22,6 +23,18 @@ export const User = objectType({
             },
           })
           .notes();
+      },
+    });
+    t.nonNull.list.nonNull.field("categories", {
+      type: Category,
+      async resolve(parent, _args, ctx) {
+        return await ctx.prisma.user
+          .findUnique({
+            where: {
+              id: parent.id!,
+            },
+          })
+          .categories();
       },
     });
   },
@@ -146,13 +159,24 @@ export const RegisterMutation = extendType({
         }
 
         const hashedPassword = await argon2.hash(args.password);
+
+        const userId = uuidv4();
+
         const userInfo = {
+          id: userId,
           username: args.username,
           email: args.email,
           password: hashedPassword,
         };
         const newUser = await prisma.user.create({
           data: userInfo,
+        });
+
+        await prisma.category.create({
+          data: {
+            id: "My Category",
+            creatorId: userId,
+          },
         });
 
         req.session.userId = newUser.id;
